@@ -1,0 +1,33 @@
+import { Injectable } from '@angular/core';
+
+import { BehaviorSubject } from 'rxjs';
+const electron = (<any>window).require('electron');
+
+@Injectable({
+  providedIn: 'root'
+})
+export class ImagesService {
+  images = new BehaviorSubject<string[]>([]);
+  directory = new BehaviorSubject<string[]>([]);
+
+  constructor() {
+    electron.ipcRenderer.on('getImagesResponse', (event, images) => {
+      this.images.next(images);
+    });
+    electron.ipcRenderer.on('getDirectoryResponse', (event, directory) => {
+      this.directory.next(directory);
+    });
+  }
+
+  navigateDirectory(path) {
+    electron.ipcRenderer.send('navigateDirectory', path);
+  }
+
+  sendNotif(title, body) {
+    const notif = {
+      title: title,
+      body: body
+    }
+    electron.ipcRenderer.send("showNotification", notif)
+  }
+}
